@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="450dp"
+    android:layout_height="280dp"
+    android:background="#1E1E1E"
+    android:orientation="horizontal"
+    android:elevation="12dp">
+
+    <LinearLayout
+        android:layout_width="120dp"
+        android:layout_height="match_parent"
+        android:background="#151515"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#2196F3"
+            android:text="AimBot"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="6dp"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#2C2C2C"
+            android:text="Visuals"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:layout_marginBottom="6dp"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end"
+            android:layout_marginBottom="8dp">
+
+            <Button
+                android:id="@+id/btnCloseMenu"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:backgroundTint="#D32F2F"
+                android:text="Close"
+                android:textSize="10sp"
+                android:textColor="#FFFFFF"/>
+        </LinearLayout>
+
+        <Switch
+            android:id="@+id/switchAimBot"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="AimBot (Автонаводка)"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="8dp"/>
+
+        <Switch
+            android:id="@+id/switchEsp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="ESP / Wallhack (Скелет)"
+            android:textColor="#FFFFFF"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aim Distance: 100m"
+            android:textColor="#AAAAAA"
+            android:textSize="12sp"/>
+
+        <SeekBar
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="500"
+            android:progress="100"/>
+    </LinearLayout>
+
+</LinearLayout>
