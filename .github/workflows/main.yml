@@ -45,7 +45,7 @@ jobs:
           sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;25.1.8937393" < <(yes) > /dev/null
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
 
-      - name: Prepare Mipmap Icons and Gradle JVM Options
+      - name: Fix Layout Resources, Mipmap Icons and Gradle JVM Options
         shell: bash
         run: |
           set -e
@@ -54,6 +54,10 @@ jobs:
           android.useAndroidX=true
           android.enableJetifier=true
           EOF
+
+          if [ -f "app/src/main/res/layout/float_icon.xml" ]; then
+            sed -i 's|@android:ic_menu_manage|@android:drawable/ic_menu_manage|g' app/src/main/res/layout/float_icon.xml
+          fi
 
           python3 - << 'PY'
           import os, struct, zlib
