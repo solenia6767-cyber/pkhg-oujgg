@@ -25,9 +25,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
-
       - name: Install Command-line Tools, SDK & NDK
         shell: bash
         run: |
@@ -47,13 +44,17 @@ jobs:
           sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;25.1.8937393" < <(yes) > /dev/null
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
 
-      - name: Generate Wrapper and Build Debug APK
+      - name: Install Gradle 7.5.1 and Build Debug APK
         shell: bash
         run: |
           set -e
-          if [ ! -f "./gradlew" ]; then
-            gradle wrapper --gradle-version 7.5.1 --distribution-type bin
-          fi
+          GRADLE_VER="7.5.1"
+          curl -fsSL "https://services.gradle.org/distributions/gradle-${GRADLE_VER}-bin.zip" -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp/gradle_dist
+          GRADLE_BIN="/tmp/gradle_dist/gradle-${GRADLE_VER}/bin/gradle"
+          chmod +x "$GRADLE_BIN"
+
+          "$GRADLE_BIN" wrapper --gradle-version "${GRADLE_VER}" --distribution-type bin
           chmod +x ./gradlew
           ./gradlew assembleDebug --stacktrace
 
