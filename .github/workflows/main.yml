@@ -11,6 +11,10 @@ jobs:
     name: Build APK with NDK & CMake
     runs-on: ubuntu-latest
 
+    env:
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -21,29 +25,24 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Pre-accept Android SDK Licenses
+      - name: Install Command-line Tools, SDK & NDK
         shell: bash
         run: |
-          SDK_DIR="/usr/local/lib/android/sdk"
-          mkdir -p "$SDK_DIR/licenses"
-          printf "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5fd87478995059513033d29c79724e75614b\n24333f8a63b6825ea9c5514f83c2829b004d1fee" > "$SDK_DIR/licenses/android-sdk-license"
-          printf "84831b9409646a918e30573bab4c9c91346d8abd\n504667f4c0de7af1a06de9f4b1727b84351f2910" > "$SDK_DIR/licenses/android-sdk-preview-license"
-          printf "33b6a2b64607f11b759f320ef9dff4ae5c47d97a" > "$SDK_DIR/licenses/google-gdk-license"
-          printf "60108f3c477d54973782738d02960d0b0a126e4e" > "$SDK_DIR/licenses/android-googletv-license"
-          printf "e9acab5b5b5a1e5b5b5a1e5b5b5a1e5b5b5a1e5b" > "$SDK_DIR/licenses/android-googlexr-license"
-          printf "d975f751698a77b662f1254ddbe6ee349f6bc705" > "$SDK_DIR/licenses/mips-android-sysimage-license"
-          printf "846c05457b3b71989a7f14b3c0b3b1e5b3b71989" > "$SDK_DIR/licenses/intel-android-sysimage-license"
+          set -e
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          if [ ! -d "$ANDROID_HOME/cmdline-tools/latest" ]; then
+            curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-12266719_latest.zip -o /tmp/cmdtools.zip
+            unzip -q /tmp/cmdtools.zip -d /tmp/cmdtools_extracted
+            mv /tmp/cmdtools_extracted/cmdline-tools "$ANDROID_HOME/cmdline-tools/latest"
+            rm -rf /tmp/cmdtools.zip /tmp/cmdtools_extracted
+          fi
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH"
 
-      - name: Install NDK and Build Tools
-        shell: bash
-        run: |
           set +o pipefail
-          yes "y" | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager --install "ndk;25.1.8937393" "build-tools;33.0.2" "platforms;android-33"
-          yes "y" | sdkmanager --licenses > /dev/null 2>&1 || true
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;25.1.8937393" < <(yes) > /dev/null
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
