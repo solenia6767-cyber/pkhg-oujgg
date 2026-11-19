@@ -25,6 +25,9 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
+
       - name: Install Command-line Tools, SDK & NDK
         shell: bash
         run: |
@@ -44,33 +47,21 @@ jobs:
           sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;25.1.8937393" < <(yes) > /dev/null
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
 
-      - name: Locate Project Root and Build Debug APK
+      - name: Generate Wrapper and Build Debug APK
         shell: bash
         run: |
           set -e
-          if [ -f "./gradlew" ]; then
-            PROJ_DIR="."
-          elif [ -f "./HamsterModMenu/gradlew" ]; then
-            PROJ_DIR="./HamsterModMenu"
-          else
-            GW_PATH=$(find . -maxdepth 3 -name "gradlew" -type f | head -n 1)
-            if [ -z "$GW_PATH" ]; then
-              echo "gradlew not found in repository"
-              ls -la
-              exit 1
-            fi
-            PROJ_DIR=$(dirname "$GW_PATH")
+          if [ ! -f "./gradlew" ]; then
+            gradle wrapper --gradle-version 7.5.1 --distribution-type bin
           fi
-
-          echo "PROJECT_DIR=$PROJ_DIR" >> "$GITHUB_ENV"
-          chmod +x "$PROJ_DIR/gradlew"
-          (cd "$PROJ_DIR" && ./gradlew assembleDebug --stacktrace)
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --stacktrace
 
       - name: Copy APK to Known Artifact Path
         shell: bash
         run: |
           set -e
-          APK_FILE=$(find "${PROJECT_DIR:-.}" -path "*/build/outputs/apk/debug/*.apk" -type f | head -n 1)
+          APK_FILE=$(find . -path "*/build/outputs/apk/debug/*.apk" -type f | head -n 1)
           if [ -z "$APK_FILE" ]; then
             echo "Debug APK not found"
             exit 1
