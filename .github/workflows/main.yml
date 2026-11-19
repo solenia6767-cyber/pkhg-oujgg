@@ -44,16 +44,42 @@ jobs:
           sdkmanager --install "platform-tools" "platforms;android-33" "build-tools;33.0.2" "ndk;25.1.8937393" < <(yes) > /dev/null
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-        working-directory: HamsterModMenu
+      - name: Locate Project Root and Build Debug APK
+        shell: bash
+        run: |
+          set -e
+          if [ -f "./gradlew" ]; then
+            PROJ_DIR="."
+          elif [ -f "./HamsterModMenu/gradlew" ]; then
+            PROJ_DIR="./HamsterModMenu"
+          else
+            GW_PATH=$(find . -maxdepth 3 -name "gradlew" -type f | head -n 1)
+            if [ -z "$GW_PATH" ]; then
+              echo "gradlew not found in repository"
+              ls -la
+              exit 1
+            fi
+            PROJ_DIR=$(dirname "$GW_PATH")
+          fi
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
-        working-directory: HamsterModMenu
+          echo "PROJECT_DIR=$PROJ_DIR" >> "$GITHUB_ENV"
+          chmod +x "$PROJ_DIR/gradlew"
+          (cd "$PROJ_DIR" && ./gradlew assembleDebug --stacktrace)
+
+      - name: Copy APK to Known Artifact Path
+        shell: bash
+        run: |
+          set -e
+          APK_FILE=$(find "${PROJECT_DIR:-.}" -path "*/build/outputs/apk/debug/*.apk" -type f | head -n 1)
+          if [ -z "$APK_FILE" ]; then
+            echo "Debug APK not found"
+            exit 1
+          fi
+          mkdir -p /tmp/artifact_apk
+          cp "$APK_FILE" /tmp/artifact_apk/app-debug.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: hamster-mod-menu-apk
-          path: HamsterModMenu/app/build/outputs/apk/debug/app-debug.apk
+          path: /tmp/artifact_apk/app-debug.apk
